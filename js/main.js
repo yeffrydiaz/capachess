@@ -16,7 +16,6 @@ const initialPos = JSON.parse(localStorage.getItem('lastposition')) || [
 
 const currentPos = []
 
-
 // const square = (id, color) => `
 // <div 
 //   id="${id}" 
@@ -55,6 +54,9 @@ const createBoard = _ => {
   resizeBoard()
   // addClicktoSquares()
 }
+
+
+
 
 function resizeBoard() {
   board.style.width = dimentions().smaller
@@ -181,8 +183,6 @@ const pieceMouseDown = e => {
   const pieceSquareId = piece.getAttribute('data-square')
   highlightSquare(pieceSquareId)
   piece.classList.add('grabbing')
-  document.querySelector(`.grabbing`).style.zIndex = 5
-  console.log(isMouseDown)
 }
 
 const pieceMouseUp = e => {
@@ -192,93 +192,27 @@ const pieceMouseUp = e => {
   const pieceSquareId = piece.getAttribute('data-square')
   const pieceSelected = document.querySelector(`.grabbing`)
   unHighlightSquare(pieceSquareId)
-  if (pieceSelected) {
-    pieceSelected.style.zIndex = 0
-    piece.classList.remove('grabbing')
-  }
-  console.log(isMouseDown)
+  if (pieceSelected) { piece.classList.remove('grabbing') }
 }
 
-// body.onmousemove = e => {
-//   const posX = window.event.pageX || e.targetTouches[0].pageX
-//   const posY = window.event.pageY || e.targetTouches[0].pageY
-//   console.log(posX, posY)
-// }
-
-body.onmousemove = e => { movePiece(e) }
-
-const piecePos = { x: 0, y: 0 }
+body.onmousemove = e => movePiece(e)
 
 function movePiece(e) {
-
-  // e.preventDefault()
   if (isMouseDown) {
     // const touch = e.targetTouches ? e.targetTouches[0] : ''
     const posX = window.event.pageX || e.targetTouches[0].pageX
     const posY = window.event.pageY || e.targetTouches[0].pageY
     const piece = document.querySelector(`.grabbing`)
     const pieceDimentions = piece.offsetWidth
-    const screenGap = (dimentions().winWidth - dimentions().winHeight)
-    const moveX = posX - pieceDimentions + screenGap
-    const moveY = posY - pieceDimentions + screenGap
+    const boardPos = elementCoordenates(board)
+    const moveX = posX - pieceDimentions / 2 - boardPos.left
+    const moveY = posY - pieceDimentions / 2 - boardPos.top
     // const moveX = posX <= 0 ? 0 : posX > pieceDimentions ? posX - pieceDimentions : pieceDimentions - posX
     // const moveY = posY <= 0 ? 0 : posY > pieceDimentions ? posY - pieceDimentions : pieceDimentions - posY
     piece.style.transform = `translate(${moveX}px ,${moveY}px)`
 
-    // if (moveX <= 0) { piece.style.transform = `translate(${0}px ,${moveY}px)` } else
-    //   if (moveY <= 0) { piece.style.transform = `translate(${moveX}px ,${0}px)` } else {
-    //     piece.style.transform = `translate(${moveX}px ,${moveY}px)`
-    //   }
-
-    // if (moveX > 0 &&
-    //   moveY > 0
-    //   // moveX < boardData.dimentions - pieceDimentions &&
-    //   // moveY < boardData.dimentions - pieceDimentions
-    // ) {
-
-    //   piece.style.transform = `translate(${moveX}px ,${moveY}px)`
-    // }
-    console.log(piece.offsetWidth, pieceDimentions)
-    console.log(moveX, moveY)
-    console.log(posX, posY)
-    console.log(screenGap)
-    // console.log(isMouseDown, e)
   }
 }
-// function movePiece(e, imgSource, pieceId, squareId) {
-//   e.preventDefault()
-//   if (isMouseDown) {
-//     console.log(isMouseDown)
-//     // const touch = e.targetTouches ? e.targetTouches[0] : ''
-//     const moveX = window.event.pageX || e.targetTouches[0].pageX
-//     const moveY = window.event.pageY || e.targetTouches[0].pageY
-//     const piece = document.querySelector(`#${pieceId}`)
-//     const pieceDimentions = piece.clientWidth
-//     console.log(piece.offsetWidth, pieceDimentions, moveX, moveY)
-//     e.target.style.transform = `translate(${moveX - pieceDimentions}px ,${moveY - pieceDimentions}px)`
-//   }
-// }
-
-// function getMouse(e) {
-//   const beepos = { x: 0, y: 0 }
-//   const mouse = { x: 0, y: 0 }
-
-//   mouse.x = e.pageX
-//   mouse.y = e.pageY
-//   //Checking directional change
-
-//   //1. find distance X , distance Y
-//   var distX = mouse.x - beepos.x;
-//   var distY = mouse.y - beepos.y;
-//   //Easing motion
-//   //Progressive reduction of distance 
-//   beepos.x += distX / 5;
-//   beepos.y += distY / 2;
-
-//   bee.style.left = beepos.x + "px";
-//   bee.style.top = beepos.y + "px";
-
-// }
 
 function highlightSquare(squareId) {
   const square = document.querySelector(`#${squareId}`)
@@ -291,120 +225,16 @@ function unHighlightSquare(squareId) {
   square.style.backgroundColor = initialSquareBackgroungC
 }
 
-// function touchPieceStart(e, imgSource, pieceImg, pieceId, squareId) {
-//   var touch = e.targetTouches[0]
-//   const piece = document.querySelector(`#${e.target.id}`)
-//   console.log('start', e.target.id, piece)
-//   piece.classList.add('grabbing')
-// }
-
-// function movePiece(event, imgSource, pieceImg, pieceId, squareId) {
-//   var touch = event.targetTouches[0]
-//   // console.log(touch)
-//   const pieceCssPos = elementStyle(event.target, 'position')
-//   if (pieceCssPos !== 'absolute') event.target.style.position = 'absolute'
-//   console.log(pieceCssPos)
-//   event.target.style.transform = `translate(${touch.pageX}px ,${touch.pageY}px) rotate(90deg)`
-//   // event.target.style.bottom = touch.pageY + 'px'
-//   event.preventDefault()
-// }
-
-// function touchPieceEnd(e, imgSource, pieceId, squareId) {
-//   var touch = e.targetTouches[0]
-//   console.log('end')
-//   e.target.classList.remove('grabbing')
-// }
-
-// function dragStart(e, imgSource, pieceImg, id, squareId) {
-//   document.querySelector(`#${id}`).style.opacity = 0
-//   const dimention = dimentions().smaller / 17
-//   const img = new Image()
-//   img.src = imgSource
-//   e.dataTransfer.setDragImage(img, dimention, dimention)
-//   const piece = [
-//     pieceImg,
-//     id,
-//     imgSource,
-//     squareId
-//   ]
-//   e.dataTransfer.setData("piece", JSON.stringify(piece))
-//   e.dataTransfer.effectAllowed = "move"
-// }
-
-// function dragOver(e) {
-//   e.preventDefault()
-//   e.dataTransfer.dropEffect = "move"
-//   if (!squareOver || squareOver !== getSquareData(e).squareDestId) {
-//     squareOver = getSquareData(e).squareDestId
-//     // highlightSquare(e)
-//   }
-// }
-
-// function dragEnter(e) {
-//   getSquareData(e).squareDest.style.backgroundColor = bgColorhighlightSquare
-// }
-
-// function dragLeaveSquare(e) {
-//   unHighlightSquare(e)
-// }
-
-// function dropPiece(e) {
-//   e.preventDefault()
-//   if (squareOver === getSquareData(e).squareDestId) dragLeaveSquare(e)
-//   squareOver = ''
-//   const data = e.dataTransfer.getData("piece")
-//   piece = JSON.parse(data)
-//   const pieceImg = piece[0]
-//   const pieceId = piece[1]
-//   const imgSource = piece[2]
-//   const initialSquareId = piece[3]
-//   if (pieceId !== e.target.id) {
-//     // console.log(initialSquareId, getSquareData(e).squareDestId, e.target.id)
-//     document.querySelector(`#${pieceId}`).remove()
-//     getSquareData(e).squareDest.style.backgroundColor = initialSquareBackgroungC
-//     if (getSquareData(e).squareDestType === 'square') {
-//       e.target.innerHTML = pieceImg
-//     } else {
-//       e.target.parentNode.innerHTML = pieceImg
-//     }
-//     const pieceEl = document.querySelector(`#${pieceId}`)
-//     setPieceHandles(pieceEl, imgSource, pieceImg, pieceId, getSquareData(e).squareDestId)
-//   } else {
-//     document.querySelector(`#${pieceId}`).style.opacity = 1
-//   }
-// }
-
-// function highlightSquare(e) {
-//   initialSquareBackgroungC = elementStyle(getSquareData(e).squareDest, 'backgroundColor')
-//   getSquareData(e).squareDest.style.backgroundColor = bgColorhighlightSquare
-// }
-
-// function unHighlightSquare(e) {
-//   getSquareData(e).squareDest.style.backgroundColor = initialSquareBackgroungC
-// }
-
-// const getSquareData = (e) => {
-//   if (!document.querySelector(`#${e.target.id}`)) return false
-//   const squareDestType = document.querySelector(`#${e.target.id}`).classList.contains('piece') ? 'piece' : 'square'
-//   const squareDestId = squareDestType === 'square' ? e.target.id : e.target.parentNode.id
-//   const squareDest = document.querySelector(`#${squareDestId}`)
-//   return {
-//     squareDestType,
-//     squareDestId,
-//     squareDest
-//   }
-// }
-
-// var isMouseDown = false;
-// document.onmousedown = function () { isMouseDown = true };
-// document.onmouseup = function () { isMouseDown = false };
-// document.onmousemove = function () { if (isMouseDown) { body.style.cursor = '-webkit-grabbing' } };
-
-// const pieceMouseDown = el => body.style.cursor = '-webkit-grabbing'
-// const pieceMouseUp = el => body.style.cursor = 'default'
-
-
 const elementStyle = (el, cssProp) => window.getComputedStyle(el).getPropertyValue(cssProp)
+const elementCoordenates = el => {
+  const coord = el.getBoundingClientRect()
+  return {
+    top: coord.top,
+    left: coord.left,
+    bottom: coord.bottom,
+    right: coord.right,
+  }
+}
 
 createBoard()
 setPosition(initialPos)
