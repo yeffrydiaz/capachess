@@ -31,19 +31,34 @@ body {
   display: grid;
   border-radius: 5px;
   overflow: hidden;
+  z-index: 0;
 }
 
 .square {
   width: 20px;
   height: 20px;
+  cursor: pointer;
+  z-index: 0;
 }
 
 .light {
   background: #ddd;
 }
 
-.dark {
+.green {
   background: rgb(58, 121, 47);
+}
+
+.blue {
+  background: rgb(91, 136, 144)
+}
+
+.wood {
+  background: #A0793D;
+}
+
+.clicked {
+  background: rgba(197, 188, 61, 0.96)
 }
 
 .piece {

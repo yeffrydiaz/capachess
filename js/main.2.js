@@ -32,7 +32,6 @@ const square = (id, color) => {
 
 function mouseOverSquare(squareId) {
   const square = document.querySelector(`#${squareId}`)
-
   // const boardPos = elementCoordenates(board)
   const squarePos = elementCoordenates(square)
 
@@ -43,8 +42,6 @@ function mouseOverSquare(squareId) {
   const left = parseInt(squarePos.left)
   const right = parseInt(squarePos.right)
   const bottom = parseInt(squarePos.bottom)
-
-  // console.log(top, left, right, bottom)
 
   return (
     top < mouse.y &&
@@ -149,17 +146,8 @@ function placePiece(pieceName, squareId) {
   const imgSource = `/img/pieces/classic/${pieceName}.svg`
   const pieceId = `${pieceName}${column}`
 
-  // const squareCordinates = square.getBoundingClientRect()
-  // const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft
-  // const scrollTop = window.pageYOffset || document.documentElement.scrollTop
-
-  // const squareCordinatesTop = squareCordinates.top + scrollTop
-  // const squareCordinatesLeft = squareCordinates.left + scrollLeft
-
   const squareCordinatesTop = square.offsetTop
   const squareCordinatesLeft = square.offsetLeft
-
-  // console.log(squareId, squareCordinatesTop, squareCordinatesLeft)
   const pieceEl = createPiece(pieceId, squareDimentions, imgSource, squareId, squareCordinatesTop, squareCordinatesLeft)
   board.appendChild(pieceEl)
 
