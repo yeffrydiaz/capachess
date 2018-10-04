@@ -58,7 +58,15 @@ body {
 }
 
 .clicked {
-  background: rgba(197, 188, 61, 0.96)
+  background: rgba(216, 209, 116, 0.81);
+}
+
+.landed {
+  background: rgba(190, 183, 85, 0.81);
+}
+
+.illegalmove {
+  background: rgba(251, 111, 18, 0.96);
 }
 
 .piece {
