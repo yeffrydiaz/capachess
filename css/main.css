@@ -27,7 +27,7 @@ body {
   z-index: 0;
 }
 
-#board {
+.board {
   display: grid;
   border-radius: 5px;
   overflow: hidden;
@@ -42,11 +42,11 @@ body {
 }
 
 .light {
-  background: #ddd;
+  background: #fff;
 }
 
 .green {
-  background: rgb(58, 121, 47);
+  background: rgb(104, 152, 96);
 }
 
 .blue {
@@ -58,11 +58,11 @@ body {
 }
 
 .clicked {
-  background: rgba(216, 209, 116, 0.81);
+  background: rgba(255, 250, 188, 0.81);
 }
 
 .landed {
-  background: rgba(190, 183, 85, 0.81);
+  background: rgba(195, 189, 95, 0.9);
 }
 
 .illegalmove {

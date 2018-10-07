@@ -1,36 +1,75 @@
 window.onload = () => {
 
   const body = document.querySelector('body')
-  const board = document.querySelector('#board')
+  const backButton = document.querySelector('#back')
+  const nextButton = document.querySelector('#next')
+  let board = ''
   const boardData = {}
   const allSquares = {}
   allSquares.elmntsArr = []
   allSquares.pos = []
   allSquares.color = []
   const allPieces = {}
+  const remainingPieces = {}
   const boardLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
   const mouse = { x: 0, y: 0 }
   let isMouseDown = false
   let pieceClickedId = false
-  const currentPos = []
-  const initialPos = JSON.parse(localStorage.getItem('lastposition')) || [
-    //whites
-    ['wr', 'a1'], ['wn', 'b1'], ['wb', 'c1'], ['wq', 'd1'], ['wk', 'e1'], ['wb', 'f1'], ['wn', 'g1'], ['wr', 'h1'],
-    ['wp', 'a2'], ['wp', 'b2'], ['wp', 'c2'], ['wp', 'd2'], ['wp', 'e2'], ['wp', 'f2'], ['wp', 'g2'], ['wp', 'h2'],
-    //blacks
-    ['br', 'a8'], ['bn', 'b8'], ['bb', 'c8'], ['bq', 'd8'], ['bk', 'e8'], ['bb', 'f8'], ['bn', 'g8'], ['br', 'h8'],
-    ['bp', 'a7'], ['bp', 'b7'], ['bp', 'c7'], ['bp', 'd7'], ['bp', 'e7'], ['bp', 'f7'], ['bp', 'g7'], ['bp', 'h7'],
+  const initialPos = [
+    [
+      //whites
+      ['wra', 'a1'], ['wnb', 'b1'], ['wbc', 'c1'], ['wqd', 'd1'], ['wke', 'e1'], ['wbf', 'f1'], ['wng', 'g1'], ['wrh', 'h1'],
+      ['wpa', 'a2'], ['wpb', 'b2'], ['wpc', 'c2'], ['wpd', 'd2'], ['wpe', 'e2'], ['wpf', 'f2'], ['wpg', 'g2'], ['wph', 'h2'],
+      //blacks
+      ['bra', 'a8'], ['bnb', 'b8'], ['bbc', 'c8'], ['bqd', 'd8'], ['bke', 'e8'], ['bbf', 'f8'], ['bng', 'g8'], ['brh', 'h8'],
+      ['bpa', 'a7'], ['bpb', 'b7'], ['bpc', 'c7'], ['bpd', 'd7'], ['bpe', 'e7'], ['bpf', 'f7'], ['bpg', 'g7'], ['bph', 'h7'],
+    ]
   ]
+
+  const getGameDB = () => localStorage.getItem('gameData') !== null ? JSON.parse(localStorage.getItem('gameData')) : false
+
+  const gameData = {}
+  const gameDataDB = getGameDB()
+  gameData.positions = gameDataDB ? gameDataDB.positions : initialPos
+  let positionIndex = gameData.positions.length - 1
+
+  const getPositions = _ => localStorage.getItem('gameData') !== null ? JSON.parse(localStorage.getItem('gameData')) : gameData
+
+  const savePositions = _ => {
+    lastPos = []
+    allSquares.elmntsArr
+      .forEach(square => {
+        const squarePieceId = square.getAttribute('data-piece')
+        if (squarePieceId !== 'null') {
+          lastPos.push([squarePieceId, square.id])
+        }
+      })
+    gameData.positions.push(lastPos)
+    positionIndex = gameData.positions.length - 1
+    localStorage.setItem('gameData', JSON.stringify(gameData))
+    console.log(JSON.parse(localStorage.getItem('gameData')), positionIndex)
+  }
 
   const square = (id, color) => {
     const newSquare = document.createElement('div')
     newSquare.classList = `square ${color}`
     newSquare.id = id
     newSquare.setAttribute('data-piece', null)
+    newSquare.onmouseover = e => mouseOverSquare(e.target.id)
     return newSquare
   }
 
-  const createBoard = _ => {
+  function mouseOverSquare(squareId) {
+    allSquares.elmntsArr.forEach(square => square.classList.remove('squarehover'))
+    const square = document.querySelector(`#${squareId}`)
+    square.classList.add('squarehover')
+  }
+
+  function createBoard() {
+    board = document.createElement('div')
+    board.id = `board-${Date.now()}`
+    board.className = `board`
+    document.querySelector('#boardbox').appendChild(board)
     for (let k = 8; k > 0; k--) {
       for (let i = 0; i < 8; i++) {
         board.appendChild(
@@ -44,7 +83,7 @@ window.onload = () => {
         })
       }
     }
-    allSquares.elmntsArr = Array.from(document.querySelectorAll(`.square`))
+    allSquares.elmntsArr = Array.from(board.querySelectorAll(`.square`))
     resizeBoard()
     addClicktoSquares()
   }
@@ -61,13 +100,13 @@ window.onload = () => {
   }
 
   function resizeElements(element, squareDimentions) {
-    Array.from(document.querySelectorAll(`.${element}`))
+    Array.from(board.querySelectorAll(`.${element}`))
       .forEach(el => {
         el.style.width = `${squareDimentions}px`
         el.style.height = `${squareDimentions}px`
         if (element === 'piece') {
           const pieceSquareId = el.getAttribute('data-square')
-          const square = document.querySelector(`#${pieceSquareId}`)
+          const square = board.querySelector(`#${pieceSquareId}`)
           const squareCordinatesTop = square.offsetTop
           const squareCordinatesLeft = square.offsetLeft
           el.style.transform = `translate(${squareCordinatesLeft}px ,${squareCordinatesTop}px)`
@@ -91,18 +130,34 @@ window.onload = () => {
       })
   }
 
-  const setPosition = positions => {
-    positions.forEach(pos => {
-      placePiece(pos[0], pos[1])
-    })
+  backButton.onclick = _ => {
+    if (positionIndex) {
+      positionIndex--
+      setPosition(getPositions().positions[positionIndex])
+    }
+  }
+  nextButton.onclick = _ => {
+    if (positionIndex + 1 < getPositions().positions.length) {
+      positionIndex++
+      setPosition(getPositions().positions[positionIndex])
+    }
   }
 
-  function placePiece(pieceName, squareId) {
-    const square = document.querySelector(`#${squareId}`)
+  function setPosition(positions) {
+    allSquares.elmntsArr.forEach(square => square.setAttribute('data-piece', null))
+
+    for (const prop in remainingPieces) {
+      board.querySelector(`#${prop}`).remove()
+    }
+
+    positions.forEach(posData => placePiece(posData[0], posData[1]))
+  }
+
+  function placePiece(pieceId, squareId) {
+    const square = board.querySelector(`#${squareId}`)
     const { squareDimentions } = dimentions()
     const column = squareId[0]
-    const imgSource = `/img/pieces/classic/${pieceName}.svg`
-    const pieceId = `${pieceName}${column}`
+    const imgSource = `/img/pieces/classic/${pieceId.slice(0, 2)}.svg`
     const squareCordinatesTop = square.offsetTop
     const squareCordinatesLeft = square.offsetLeft
     const pieceEl = createPiece(pieceId, squareDimentions, imgSource, squareId, squareCordinatesTop, squareCordinatesLeft)
@@ -111,7 +166,7 @@ window.onload = () => {
   }
 
   const createPiece = (pieceId, dimention, imgSource, squareId, top, left) => {
-    const square = document.querySelector(`#${squareId}`)
+    const square = board.querySelector(`#${squareId}`)
     square.setAttribute('data-piece', pieceId)
     const piece = document.createElement('img')
     piece.src = imgSource
@@ -120,6 +175,7 @@ window.onload = () => {
     piece.setAttribute('data-square', squareId)
     piece.setAttribute('style', `width:${dimention}px; height:${dimention}px; transform: translate(${left}px,${top}px)`)
     allPieces[pieceId] = piece
+    remainingPieces[pieceId] = piece
     return piece
   }
 
@@ -145,7 +201,7 @@ window.onload = () => {
     cleanSquaresColors()
     mouse.x = window.event.pageX || (e.targetTouches ? e.targetTouches[0].pageX : 0)
     mouse.y = window.event.pageY || (e.targetTouches ? e.targetTouches[0].pageY : 0)
-    Array.from(document.querySelectorAll(`.grabbing`)).forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing'))
+    Array.from(board.querySelectorAll(`.grabbing`)).forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing'))
     isMouseDown = true
     const currentPieceClicked = e.target
     const currentPieceClickedSquareId = currentPieceClicked.getAttribute('data-square')
@@ -172,55 +228,57 @@ window.onload = () => {
   function pieceMouseUp(e) {
     e.preventDefault()
     isMouseDown = false
-    if (document.querySelectorAll(`.dragging`)) movePiece(e)
-    Array.from(document.querySelectorAll(`.grabbing`)).forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing', 'dragging'))
+    if (board.querySelectorAll(`.dragging`)) movePiece(e)
+    Array.from(board.querySelectorAll(`.grabbing`))
+      .forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing', 'dragging'))
   }
 
   function movePiece(e) {
     e.preventDefault()
-    const pieceSelected = document.querySelector(`.dragging`) || document.querySelector(`#${pieceClickedId}`)
+    const pieceSelected = board.querySelector(`.dragging`) || board.querySelector(`#${pieceClickedId}`)
     const pieceSquareId = pieceSelected ? pieceSelected.getAttribute('data-square') : ''
 
     if (currentSquareData() && pieceSquareId) {
       const currentSquareId = currentSquareData().id
-      const currentSquare = document.querySelector(`#${currentSquareId}`)
+      const currentSquare = board.querySelector(`#${currentSquareId}`)
 
       const isLegalMove = legalMoves(pieceSelected.id).some(legalSquare => legalSquare.id === currentSquare.id)
 
       if (!isLegalMove && currentSquareId !== pieceSquareId) highlightIllegalMoveSquare(currentSquareId)
 
       if (pieceSelected && isLegalMove) {
-        const squareFrom = document.querySelector(`#${pieceSquareId}`)
+        const squareFrom = board.querySelector(`#${pieceSquareId}`)
         squareFrom.setAttribute('data-piece', null)
 
-        console.log(pieceSquareId, currentSquare.id)
+        console.log(pieceSelected.id[1].toUpperCase() + pieceSquareId[0] + currentSquare.id)
         pieceSelected.setAttribute('data-square', currentSquareId)
         const isCurrentSquarePieceId = currentSquare.getAttribute('data-piece')
         if (isCurrentSquarePieceId !== `null`) {
-          document.querySelector(`#${isCurrentSquarePieceId}`).remove()
-          delete allPieces[isCurrentSquarePieceId]
+          board.querySelector(`#${isCurrentSquarePieceId}`).remove()
+          delete remainingPieces[isCurrentSquarePieceId]
         }
         currentSquare.setAttribute('data-piece', pieceSelected.id)
 
-        Array.from(document.querySelectorAll(`.grabbing`)).forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing'))
+        Array.from(board.querySelectorAll(`.grabbing`)).forEach(pieceGrabbed => pieceGrabbed.classList.remove('grabbing'))
         pieceSelected.classList.remove('dragging')
 
         pieceSelected.style.transform = translatePiece(currentSquareData().left, currentSquareData().top)
         allPieces[pieceSelected.id] = pieceSelected
         pieceClickedId = false
+        savePositions()
       } else {
-        pieceSelected.style.transform = translatePiece(fromSquareData(pieceSquareId).left, fromSquareData(pieceSquareId).top)
+        pieceSelected.style.transform = translatePiece(fromOrToSquareData(pieceSquareId).left, fromOrToSquareData(pieceSquareId).top)
       }
     } else if (pieceSelected) {
-      pieceSelected.style.transform = translatePiece(fromSquareData(pieceSquareId).left, fromSquareData(pieceSquareId).top)
+      pieceSelected.style.transform = translatePiece(fromOrToSquareData(pieceSquareId).left, fromOrToSquareData(pieceSquareId).top)
     }
   }
 
   function dragPiece(e) {
-    if (isMouseDown && document.querySelector(`.grabbing`)) {
+    if (isMouseDown && board.querySelector(`.grabbing`)) {
       mouse.x = window.event.pageX || (e.targetTouches ? e.targetTouches[0].pageX : 0)
       mouse.y = window.event.pageY || (e.targetTouches ? e.targetTouches[0].pageY : 0)
-      const piece = document.querySelector(`.grabbing`)
+      const piece = board.querySelector(`.grabbing`)
       const pieceSquareId = piece.getAttribute('data-square')
       piece.classList.add('dragging')
       const pieceDimentions = piece.offsetWidth
@@ -241,15 +299,17 @@ window.onload = () => {
             const pieceSquareId = getElement(pieceClickedId).getAttribute('data-square')
             const isLegalMove = legalMoves(pieceClickedId).some(legalSquare => legalSquare.id === s.id)
             if (isLegalMove) {
-              const squareFrom = document.querySelector(`#${pieceSquareId}`)
+              const squareFrom = board.querySelector(`#${pieceSquareId}`)
               squareFrom.setAttribute('data-piece', null)
-              const squareClicked = document.querySelector(`#${s.id}`)
+              const squareClicked = board.querySelector(`#${s.id}`)
               squareClicked.setAttribute('data-piece', pieceClickedId)
               getElement(pieceClickedId).setAttribute('data-square', s.id)
               getElement(pieceClickedId).style.transform = translatePiece(squarePosition.left, squarePosition.top)
               getElement(pieceClickedId).classList.remove('grabbing', 'dragging')
               highlightSquare(pieceSquareId, squareClicked.id)
+              console.log(pieceClickedId[1].toUpperCase() + pieceSquareId[0] + s.id)
               pieceClickedId = false
+              savePositions()
             } else {
               highlightIllegalMoveSquare(s.id)
             }
@@ -267,7 +327,7 @@ window.onload = () => {
     square.bottom > mouse.y
   )[0]
 
-  const fromSquareData = pieceSquareId => allSquares.pos.filter(square => square.id === pieceSquareId)[0]
+  const fromOrToSquareData = pieceSquareId => allSquares.pos.filter(square => square.id === pieceSquareId)[0]
 
   function highlightSquare(squareIdBefore, squareIdAfter) {
     cleanSquaresColors()
@@ -287,7 +347,10 @@ window.onload = () => {
     allSquares.elmntsArr.forEach(square => square.classList.remove('clicked', 'landed'))
   }
 
-  const getElement = elId => document.querySelector(`#${elId}`)
+  const getElement = prop => (prop[0] === '#' || prop[0] === '.') ?
+    board.querySelector(`${prop}`) :
+    board.querySelector(`#${prop}`)
+
 
   // const elementStyle = (el, cssProp) => window.getComputedStyle(el).getPropertyValue(cssProp)
 
@@ -496,6 +559,58 @@ window.onload = () => {
       })
     }
 
+    //castle
+    if (pieceType === 'k') {
+      const king = pieceColor === 'w' ? 'wke' : 'bke'
+      const rockH = pieceColor === 'w' ? 'wrh' : 'brh'
+      const rockA = pieceColor === 'w' ? 'wra' : 'bra'
+      const squareA = pieceColor === 'w' ? 'a1' : 'a8'
+      const squareB = pieceColor === 'w' ? 'b1' : 'b8'
+      const squareC = pieceColor === 'w' ? 'c1' : 'c8'
+      const squareD = pieceColor === 'w' ? 'd1' : 'd8'
+      const squareE = pieceColor === 'w' ? 'e1' : 'e8'
+      const squareF = pieceColor === 'w' ? 'f1' : 'f8'
+      const squareG = pieceColor === 'w' ? 'g1' : 'g8'
+      const squareH = pieceColor === 'w' ? 'h1' : 'h8'
+
+      const castleType = [
+        {//short castle
+          square1: squareF,
+          square2: squareG,
+          square3: squareG,//repeated to compensate square on long castle
+          square4: squareH,
+          rock: rockH
+        },
+        {//long castle
+          square1: squareD,
+          square2: squareC,
+          square3: squareB,
+          square4: squareA,
+          rock: rockA
+        },
+      ]
+      castleType.forEach(castle => {
+        if (getElement(squareE).getAttribute('data-piece') === king &&
+          getElement(castle.square1).getAttribute('data-piece') === 'null' &&
+          getElement(castle.square2).getAttribute('data-piece') === 'null' &&
+          (getElement(castle.square2).classList.contains('landed') ||
+            getElement(castle.square2).classList.contains('squarehover')) &&
+          getElement(castle.square3).getAttribute('data-piece') === 'null' &&
+          getElement(castle.square4).getAttribute('data-piece') === castle.rock
+        ) {
+          const square = allSquares.elmntsArr.filter(square => square.id === castle.square2)
+          moves.push(square[0])
+          getElement(castle.rock).style.transform = translatePiece(fromOrToSquareData(castle.square1).left, fromOrToSquareData(castle.square1).top)
+          getElement(castle.rock).setAttribute('data-square', castle.square1)
+          getElement(castle.square1).setAttribute('data-piece', castle.rock)
+          getElement(castle.square4).setAttribute('data-piece', null)
+          getElement(squareE).setAttribute('data-piece', null)
+          cleanSquaresColors()
+          savePositions()
+        }
+      })
+    }
+
     function isSquareNullOrPieceDifferentColor(square) {
       return square.getAttribute('data-piece') === 'null' ||
         square.getAttribute('data-piece')[0] !== pieceColor
@@ -508,7 +623,7 @@ window.onload = () => {
   }
 
   createBoard()
-  setPosition(initialPos)
+  setPosition(getPositions().positions[getPositions().positions.length - 1])
   body.onmousemove = e => dragPiece(e)
 
   window.onchange = resizeBoard
