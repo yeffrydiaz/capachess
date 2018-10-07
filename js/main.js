@@ -14,7 +14,7 @@ window.onload = () => {
   const boardLetters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h']
   const mouse = { x: 0, y: 0 }
   let isMouseDown = false
-  let pieceClickedId = false
+  let pieceClickedId = false  
   const initialPos = [
     [
       //whites
@@ -31,23 +31,27 @@ window.onload = () => {
   const gameData = {}
   const gameDataDB = getGameDB()
   gameData.positions = gameDataDB ? gameDataDB.positions : initialPos
+  gameData.piecesMoves=gameDataDB ? gameDataDB.piecesMoves : []
   let positionIndex = gameData.positions.length - 1
 
   const getPositions = _ => localStorage.getItem('gameData') !== null ? JSON.parse(localStorage.getItem('gameData')) : gameData
 
-  const savePositions = _ => {
+  const savePositions = (pieceId,square) => {
+    if(checkLastMove(pieceId,square)){
     lastPos = []
     allSquares.elmntsArr
       .forEach(square => {
-        const squarePieceId = square.getAttribute('data-piece')
+        const squarePieceId = square.getAttribute('data-piece')       
         if (squarePieceId !== 'null') {
-          lastPos.push([squarePieceId, square.id])
+          lastPos.push([squarePieceId, square.id] )
         }
-      })
+      })    
     gameData.positions.push(lastPos)
+    gameData.piecesMoves.push([pieceId,square])
     positionIndex = gameData.positions.length - 1
     localStorage.setItem('gameData', JSON.stringify(gameData))
     console.log(JSON.parse(localStorage.getItem('gameData')), positionIndex)
+    }
   }
 
   const square = (id, color) => {
@@ -264,8 +268,8 @@ window.onload = () => {
 
         pieceSelected.style.transform = translatePiece(currentSquareData().left, currentSquareData().top)
         allPieces[pieceSelected.id] = pieceSelected
-        pieceClickedId = false
-        savePositions()
+        pieceClickedId = false 
+        savePositions(pieceSelected.id,pieceSquareId)
       } else {
         pieceSelected.style.transform = translatePiece(fromOrToSquareData(pieceSquareId).left, fromOrToSquareData(pieceSquareId).top)
       }
@@ -309,13 +313,20 @@ window.onload = () => {
               highlightSquare(pieceSquareId, squareClicked.id)
               console.log(pieceClickedId[1].toUpperCase() + pieceSquareId[0] + s.id)
               pieceClickedId = false
-              savePositions()
+              savePositions(pieceClickedId,s.id)
             } else {
               highlightIllegalMoveSquare(s.id)
             }
           }
         }
       })
+  }
+
+  const checkLastMove = (pieceId,square) =>{
+    const lastMove = gameData.piecesMoves[gameData.piecesMoves.length-1] || [[]]
+    const lastMovePieceId = lastMove[0]
+    const lastMoveSquare = lastMove[1]
+    return (lastMovePieceId !==pieceId && lastMoveSquare !==square)
   }
 
   const translatePiece = (left, top) => `translate(${left - elementCoordenates(board).left}px ,${top - elementCoordenates(board).top}px)`
@@ -606,7 +617,7 @@ window.onload = () => {
           getElement(castle.square4).setAttribute('data-piece', null)
           getElement(squareE).setAttribute('data-piece', null)
           cleanSquaresColors()
-          savePositions()
+          savePositions(king,castle.square2)
         }
       })
     }
